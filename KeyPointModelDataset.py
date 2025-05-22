@@ -25,9 +25,9 @@ from torchvision import models
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection import FasterRCNN
 
-from engine import train_one_epoch, evaluate
-import utils
-from utils import collate_fn
+# from engine import train_one_epoch, evaluate
+# import utils
+# from utils import collate_fn
 import warnings
 warnings.filterwarnings('ignore')
 
