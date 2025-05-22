@@ -143,7 +143,7 @@ class KeyPointDetectionDS(Dataset):
             self.show_load(image_path,key_points, image_i_dict)
 
         if self.transform:
-            transform = A.Compose([A.Resize(width=500, height=500),
+            transform = A.Compose([A.Resize(width=312, height=312),
                                     A.VerticalFlip(p=0.4),
                                    #A.Rotate(p=0.5),
                                    #A.RandomCrop(width=1500, height=1000),
