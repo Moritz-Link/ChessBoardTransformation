@@ -28,6 +28,7 @@ from torchvision.models.detection import FasterRCNN
 # from engine import train_one_epoch, evaluate
 # import utils
 # from utils import collate_fn
+from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -87,7 +88,70 @@ class Net(torch.nn.Module):
         x = self.fc3(x)
 
         return x
-    
+
+#To Do  
+
+class EarlyStopping:
+    """Early stops the training if validation loss doesn't improve after a given patience."""
+    def __init__(self, patience=7, verbose=False, delta=0, checkpoint_path = r'/content/'):
+        """
+        Args:
+            patience (int): How long to wait after last time validation loss improved.
+                            Default: 7
+            verbose (bool): If True, prints a message for each validation loss improvement.
+                            Default: False
+            delta (float): Minimum change in the monitored quantity to qualify as an improvement.
+                            Default: 0
+        """
+        self.patience = patience
+        self.verbose = verbose
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.val_loss_min = float('inf')
+        self.delta = delta
+        self.current_model_name = None
+        self.checkpoint_path = checkpoint_path
+
+    def __call__(self, val_loss,model):
+        score = -val_loss
+
+        if self.best_score is None:#first
+            self.best_score = score
+            self.save_checkpoint(val_loss,model)
+        elif score < self.best_score + self.delta:#worse
+            self.counter += 1
+            if self.verbose:
+                print(f'EarlyStopping counter: {self.counter} of {self.patience}')
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:#better
+            self.best_score = score
+            self.save_checkpoint(val_loss,model)
+            self.counter = 0
+
+    def save_checkpoint(self, val_loss,model):
+        '''Saves model when validation loss decrease.'''
+        if self.verbose:
+            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).')
+        now = datetime.now()
+        # Format: year, month, day, hour, minute
+        current_time_numbers = (now.year, now.month, now.day, now.hour, now.minute, now.second)
+        year, month, day, hour, minute,second = current_time_numbers
+        model_name = f'Net_{year}_{month}_{day}_{hour}_{minute}_{second}.pt'
+
+        torch.save(model.state_dict(), model_name)
+        self.val_loss_min = val_loss
+        if self.current_model_name is not None:
+          os.remove(self.checkpoint_path + self.current_model_name)
+        self.current_model_name = model_name
+#Sceduler and Argument Class
+# Evalaute Function - Several Metrics - other than MAE and MSE - Key Point Specific?
+# Storage of results
+# Dataset Licence? Citation Necessary?
+
+# Start Second Model 
+# Dataset
 
 
 class KeyPointDetectionDS(Dataset):
