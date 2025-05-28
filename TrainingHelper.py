@@ -56,7 +56,7 @@ def train(args):
     model.to(device)
     LossFunction = args["LossFunction"]
     Optimizer = args["Optimizer"](model.parameters(), lr = args["Optimizer_LR"])
-
+    train_params = {"Optimizer" : Optimizer, "LossFunction": LossFunction}
     training_loss = 0
 
     loss_dict = {
@@ -88,7 +88,7 @@ def train(args):
     #save Model - in Ealry Stopping normal!
 
     #training_loss /= args["EPOCHS"]
-    return loss_dict
+    return loss_dict,train_params
 
 
 def train_one_epoch(TrainDataLoader, LossFunction, Optimizer, model, device):
