@@ -1,9 +1,12 @@
 import torch
 from torch.utils.data import Dataset,DataLoader
 
-
+import json
 import matplotlib.pyplot as plt
 import numpy as np
+
+from torch.optim import Adam
+from torch.nn import MSELoss
 
 class AnalyseModelPerformance():
   def __init__(self) -> None:
@@ -107,6 +110,45 @@ def train_one_epoch(TrainDataLoader, LossFunction, Optimizer, model, device):
         epoch_loss += loss.item()
     return epoch_loss / len(TrainDataLoader)
 
+def create_setting_json(Arguments_dict, train_params_dict):
+  store_dict = {}
+  # EarlyStopping, 
+  for key, value in Arguments_dict.items():
+      #"model, "Optimizer", "LossFunction",
+      if key in ["EarlyStopping"]:
+        #print(f'{value.__dict__}')
+        value_dict = value.__dict__
+        store_dict[key] = value_dict
+
+      elif key in ["Optimizer_LR", "EPOCHS", "TrainBatchSize", "ValBatchSize","TestBatchSize","StartEarlyStopping"]:
+        store_dict[key] = {key: value}
+
+  # Optizer Learning Rate - Passt
+  for key, value in train_params_dict.items():
+    if key == "Optimizer":
+      #print(value.param_groups[0].keys()) #learning_rate = Optimizer.param_groups[0]['lr']
+      if isinstance(value, Adam):
+        name = "Adam"
+      elif isinstance(value, torch.optim.SGD):
+        name = "SGD"
+      
+      pg = value.param_groups[0]
+      value_dict = {"lr": pg["lr"], "betas": pg["betas"], "eps": pg["eps"], "weight_decay": pg["weight_decay"], "Name": name}
+      store_dict[key] = value_dict
+    else:
+      vd = value.__dict__
+      if isinstance(value, MSELoss):
+        name = "MSE"
+      elif isinstance(value, torch.nn.L1Loss):
+        name = "L1"
+      elif isinstance(value, torch.nn.SmoothL1Loss):
+        name = "SmoothL1"
+      value_dict = {"reduction": vd["reduction"], "Name": name}
+      store_dict[key] = value_dict
+      
+  # Serializing json
+  with open(f'{Arguments_dict["RUN"]}_Setting.json', "w") as outfile:
+      json.dump(store_dict, outfile)
 
 
 def evaluate(ValDataLoader, model, device, LossFunction):
