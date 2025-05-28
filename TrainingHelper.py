@@ -1,5 +1,46 @@
 import torch
 from torch.utils.data import Dataset,DataLoader
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+class AnalyseModelPerformance():
+  def __init__(self) -> None:
+      pass
+
+  def __call__(self, loss_dict,run_id, safe=False):
+
+      """
+      Plots multiple loss/metric curves based on a dictionary of lists.
+
+      Args:
+          loss_dict (dict): A dictionary where keys are the names of the metrics
+                            and values are lists of the metric values over epochs.
+      """
+      num_plots = len(loss_dict)
+      rows = int(np.ceil(num_plots / 2))
+      cols = 2 if num_plots > 1 else 1
+
+      fig, axes = plt.subplots(rows, cols, figsize=(12, 5 * rows))
+      axes = axes.flatten() # Flatten in case of single row/column
+
+      for i, (metric_name, metric_values) in enumerate(loss_dict.items()):
+          axes[i].plot(metric_values)
+          axes[i].set_title(metric_name)
+          axes[i].set_xlabel("Epoch")
+          axes[i].set_ylabel("Value")
+          axes[i].grid(True)
+
+      # Hide any unused subplots
+      for j in range(num_plots, len(axes)):
+          fig.delaxes(axes[j])
+
+      plt.tight_layout()
+      plt.show()
+      if safe:
+        	fig.savefig(f'{run_id}_results.png')
+
 def train(args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
